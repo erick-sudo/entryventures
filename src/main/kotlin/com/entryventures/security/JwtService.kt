@@ -1,5 +1,8 @@
 package com.entryventures.security
 
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.*
@@ -7,10 +10,10 @@ import java.util.*
 @Component
 object JwtService {
 
-    @Value("\${frenzy.app.jwt.jwtSecretKey}")
+    @Value("\${entry.ventures.jwt.jwtSecretKey}")
     private var jwtSecretKey: String = ""
 
-    @Value("\${frenzy.app.jwt.jwtExpirationMs}")
+    @Value("\${entry.ventures.jwt.jwtExpirationMs}")
     private var jwtExpirationMs: Long = 3600
 
     fun generateJwtToken(claimsMap: Map<String, Any>): String? {
@@ -19,7 +22,7 @@ object JwtService {
         return Jwts.builder()
             .setClaims(claimsMap)
             .setExpiration(expirationDate)
-            .signWith(SignatureAlgorithm., jwtSecretKey)
+            .signWith(SignatureAlgorithm.HS512, jwtSecretKey)
             .compact()
     }
 
@@ -28,7 +31,7 @@ object JwtService {
             val claims: Claims = Jwts.parser()
                 .setSigningKey(jwtSecretKey)
                 .parseClaimsJws(token)
-                .getBody()
+                .body
             claims.get(fieldName).toString()
         } catch (e: Exception) {
             null
@@ -40,7 +43,7 @@ object JwtService {
             val claims: Claims = Jwts.parser()
                 .setSigningKey(jwtSecretKey)
                 .parseClaimsJws(token)
-                .getBody()
+                .body
             !isTokenExpired(claims.getExpiration())
         } catch (e: Exception) {
             false

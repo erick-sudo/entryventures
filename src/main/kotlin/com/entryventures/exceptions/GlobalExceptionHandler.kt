@@ -2,6 +2,7 @@ package com.entryventures.exceptions;
 
 import com.entryventures.services.ControllerService
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.ConstraintViolationException
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -36,29 +37,29 @@ class GlobalExceptionHandler(
     }
 
     // Handle Constraint Violation Errors
-//    @ExceptionHandler(ConstraintViolationException::class)
-//    fun handleConstraintViolationExceptions(ex: ConstraintViolationException): ResponseEntity<*>? {
-//        val errors: MutableMap<String, Any> = HashMap()
-//        errors["constraint_violations"] = ex.getConstraintViolations()
-//        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body<kotlin.collections.Map<String, Any>>(errors)
-//    }
+    @ExceptionHandler(ConstraintViolationException::class)
+    fun handleConstraintViolationExceptions(ex: ConstraintViolationException): ResponseEntity<*>? {
+        val errors: MutableMap<String, Any> = HashMap()
+        errors["constraint_violations"] = ex.constraintViolations
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body<Map<String, Any>>(errors)
+    }
 
     // Handle MethodArgumentNotValidException
-//    @ExceptionHandler(MethodArgumentNotValidException::class)
-//    fun handleValidationErrors(ex: MethodArgumentNotValidException): ResponseEntity<*>? {
-//        val errorsWrapper: MutableMap<String, Any> = HashMap()
-//        val errors: MutableMap<String, String?> = HashMap()
-//        val bindingResult = ex.bindingResult
-//        if (bindingResult.hasErrors()) {
-//            val fieldErrorList = bindingResult.fieldErrors
-//            for (fieldError in fieldErrorList) {
-//                errors[UtilityMethods.convertCamelCaseToSnakeCase(fieldError.field)] = fieldError.defaultMessage
-//            }
-//        }
-//        errorsWrapper["errors"] = errors
-//        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-//            .body<kotlin.collections.Map<String, Any>>(errorsWrapper)
-//    }
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationErrors(ex: MethodArgumentNotValidException): ResponseEntity<*>? {
+        val errorsWrapper: MutableMap<String, Any> = HashMap()
+        val errors: MutableMap<String, String?> = HashMap()
+        val bindingResult = ex.bindingResult
+        if (bindingResult.hasErrors()) {
+            val fieldErrorList = bindingResult.fieldErrors
+            for (fieldError in fieldErrorList) {
+                errors[fieldError.field] = fieldError.defaultMessage
+            }
+        }
+        errorsWrapper["errors"] = errors
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+            .body<Map<String, Any>>(errorsWrapper)
+    }
 
     @ExceptionHandler(AuthenticationException::class)
     fun handleException(e: AuthenticationException?): ResponseEntity<*>? {
