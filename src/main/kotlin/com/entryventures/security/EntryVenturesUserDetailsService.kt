@@ -15,7 +15,7 @@ class EntryVenturesUserDetailsService(
 
         when(optionalUser.isPresent) {
             true -> return EntryVenturesUserDetails(optionalUser.get())
-            else -> throw UsernameNotFoundException(String.format("User with Identity: \'$identity\' not found"))
+            else -> throw UsernameNotFoundException(String.format("User \'$identity\' not found"))
         }
     }
 }

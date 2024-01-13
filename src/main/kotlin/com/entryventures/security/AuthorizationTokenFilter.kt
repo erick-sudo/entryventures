@@ -13,7 +13,8 @@ import org.springframework.web.filter.OncePerRequestFilter
 import java.io.IOException
 
 class AuthorizationTokenFilter(
-    private val userDetailsService: UserDetailsService
+    private val userDetailsService: UserDetailsService,
+    private val jwtService: JwtService
 ) : OncePerRequestFilter() {
 
     /**
@@ -32,8 +33,8 @@ class AuthorizationTokenFilter(
             val jwt = parseJwt(request)
 
             jwt?.let { token ->
-                if (JwtService.validateToken(token)) {
-                    val username = JwtService.getFieldFromJwtToken("username", token)
+                if (jwtService.validateToken(token)) {
+                    val username = jwtService.getFieldFromJwtToken("username", token)
                     val userDetails = userDetailsService.loadUserByUsername(username)
 
                     val authentication = UsernamePasswordAuthenticationToken(

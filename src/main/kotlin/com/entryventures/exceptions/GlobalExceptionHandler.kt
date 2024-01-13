@@ -1,5 +1,6 @@
 package com.entryventures.exceptions;
 
+import com.entryventures.extensions.charactersUpto
 import com.entryventures.services.ControllerService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
@@ -18,6 +19,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 class GlobalExceptionHandler(
     val controllerService: ControllerService
 ) {
+
+    @ExceptionHandler(EntryVenturesException::class)
+    fun handleEntryVenturesException(ex: EntryVenturesException): ResponseEntity<*>? {
+        return controllerService.sendResponse(ex.serverStatus, mapOf("status" to ex.message))
+    }
+
     @ExceptionHandler(AccessDeniedException::class)
     fun handleAccessDeniedException(ex: AccessDeniedException?): ResponseEntity<*>? {
         return controllerService.sendResponse(HttpStatus.FORBIDDEN, mapOf("error" to "Forbidden Access", "message" to "Please contact your administrator"))
@@ -33,7 +40,7 @@ class GlobalExceptionHandler(
     @ExceptionHandler(HttpMessageConversionException::class)
     fun handleHttpMessageConversionException(ex: HttpMessageConversionException): ResponseEntity<*>? {
         // Create a custom error response or log the exception
-        return controllerService.sendResponse(HttpStatus.UNPROCESSABLE_ENTITY, mapOf("error" to "Invalid request body", "message" to "${ex.message}"))
+        return controllerService.sendResponse(HttpStatus.UNPROCESSABLE_ENTITY, mapOf("error" to "Invalid request body", "message" to "${ex.message?.charactersUpto(':')}"))
     }
 
     // Handle Constraint Violation Errors
@@ -70,7 +77,7 @@ class GlobalExceptionHandler(
     fun methodNotAllowed(ex: HttpRequestMethodNotSupportedException, req: HttpServletRequest): ResponseEntity<*>? {
         return controllerService.sendResponse(
             HttpStatus.METHOD_NOT_ALLOWED,
-            mapOf("error" to String.format("%s on < %s >", ex.message, req.servletPath))
+            mapOf("error" to String.format("%s on  %s", ex.message, req.servletPath))
         )
     }
 

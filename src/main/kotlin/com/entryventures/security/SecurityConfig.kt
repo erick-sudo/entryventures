@@ -17,10 +17,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableMethodSecurity(prePostEnabled = true)
 class SecurityConfig(
     private val entryVenturesAuthenticationEntryPoint: EntryVenturesAuthenticationEntryPoint,
-    private val entryVenturesUserDetailsService: EntryVenturesUserDetailsService
+    private val entryVenturesUserDetailsService: EntryVenturesUserDetailsService,
+    private val jwtService: JwtService
 ) {
 
-    private val authTokenFilter: () -> AuthorizationTokenFilter = @Bean { AuthorizationTokenFilter(entryVenturesUserDetailsService) }
+    private val authTokenFilter: () -> AuthorizationTokenFilter = @Bean { AuthorizationTokenFilter(entryVenturesUserDetailsService, jwtService) }
 
     private val bCryptPasswordEncoder: () -> BCryptPasswordEncoder = @Bean { BCryptPasswordEncoder() }
 

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-object JwtService {
+class JwtService {
 
     @Value("\${entry.ventures.jwt.jwtSecretKey}")
     private var jwtSecretKey: String = ""
@@ -32,7 +32,7 @@ object JwtService {
                 .setSigningKey(jwtSecretKey)
                 .parseClaimsJws(token)
                 .body
-            claims.get(fieldName).toString()
+            claims[fieldName].toString()
         } catch (e: Exception) {
             null
         }
@@ -44,7 +44,7 @@ object JwtService {
                 .setSigningKey(jwtSecretKey)
                 .parseClaimsJws(token)
                 .body
-            !isTokenExpired(claims.getExpiration())
+            !isTokenExpired(claims.expiration)
         } catch (e: Exception) {
             false
         }

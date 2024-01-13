@@ -39,7 +39,7 @@ class Group(name: String, description: String) : GrantedAuthority {
 
     // Many-to-Many relationship with User
     @ManyToMany(mappedBy = "groups")
-    private var groups = mutableListOf<Group>()
+    private var users = mutableListOf<User>()
 
     init {
         this.name = name;
