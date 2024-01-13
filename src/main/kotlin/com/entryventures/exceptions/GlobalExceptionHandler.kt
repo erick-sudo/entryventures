@@ -22,7 +22,7 @@ class GlobalExceptionHandler(
 
     @ExceptionHandler(EntryVenturesException::class)
     fun handleEntryVenturesException(ex: EntryVenturesException): ResponseEntity<*>? {
-        return controllerService.sendResponse(ex.serverStatus, mapOf("status" to ex.message))
+        return controllerService.sendResponse(ex.serverStatus, mapOf("error" to ex.message))
     }
 
     @ExceptionHandler(AccessDeniedException::class)

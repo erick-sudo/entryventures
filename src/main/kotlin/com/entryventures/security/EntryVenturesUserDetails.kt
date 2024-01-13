@@ -8,8 +8,9 @@ class EntryVenturesUserDetails(
     private val user: User
 ) : UserDetails{
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-//        return user.authorities
-        TODO("Not yet implemented")
+        val auths: MutableCollection<GrantedAuthority> = ArrayList()
+        auths.addAll(user.authorities)
+        return auths
     }
 
     override fun getPassword(): String = user.passwordDigest

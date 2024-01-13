@@ -6,13 +6,13 @@ import jakarta.validation.constraints.NotBlank
 data class AccessTokenRequest(
     @JsonProperty("grant_type")
     @NotBlank
-    private val grantType: String,
+    var grantType: String,
 
     @JsonProperty("client_id")
     @NotBlank
-    private val clientId: String,
+    var clientId: String,
 
     @JsonProperty("client_secret")
     @NotBlank
-    private val clientSecret: String,
+    var clientSecret: String,
 )

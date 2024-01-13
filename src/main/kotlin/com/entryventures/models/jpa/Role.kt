@@ -26,11 +26,11 @@ class Role(
     @Column(name = "name", unique = true, nullable = false)
     @JsonProperty("name")
     @NotBlank
-    private var name: String;
+    var name: String;
 
     @JsonProperty("description")
     @NotBlank
-    private var description: String;
+    var description: String;
 
     // Define the Many-to-Many relationship with Group
     @ManyToMany(mappedBy = "roles")

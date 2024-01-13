@@ -58,7 +58,8 @@ class AuthorizationTokenFilter(
 
         if(StringUtils.hasText(authorizationHeader)) {
             try {
-                val authHeader = authorizationHeader.split("\\s+")
+
+                val authHeader = authorizationHeader.split(Regex("\\s+"))
                 if (authHeader.first() == "Bearer" && StringUtils.hasText(authHeader[1])) {
                     return authHeader[1]
                 }

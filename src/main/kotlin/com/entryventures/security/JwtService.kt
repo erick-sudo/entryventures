@@ -14,9 +14,9 @@ class JwtService {
     private var jwtSecretKey: String = ""
 
     @Value("\${entry.ventures.jwt.jwtExpirationMs}")
-    private var jwtExpirationMs: Long = 3600
+    var jwtExpirationMs: Long = 3600
 
-    fun generateJwtToken(claimsMap: Map<String, Any>): String? {
+    fun generateJwtToken(claimsMap: Map<String, Any>): String {
         val now = Date()
         val expirationDate = Date(now.time + jwtExpirationMs)
         return Jwts.builder()

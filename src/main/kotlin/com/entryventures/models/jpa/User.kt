@@ -82,6 +82,9 @@ class User() {
     )
     private var groups: MutableList<Group> = mutableListOf()
 
+    fun getRoles() = roles
+    fun getGroups() = groups
+
 
     /**
      * Get users authorities

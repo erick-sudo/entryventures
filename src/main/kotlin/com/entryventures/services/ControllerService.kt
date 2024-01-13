@@ -4,6 +4,7 @@ import com.entryventures.exceptions.EntryVenturesException
 import com.entryventures.models.dto.AccessTokenRequest
 import com.entryventures.models.jpa.User
 import com.entryventures.repository.UserRepository
+import com.entryventures.security.JwtService
 import com.entryventures.security.PasswordService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -11,10 +12,11 @@ import org.springframework.stereotype.Service
 
 @Service
 class ControllerService(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val jwtService: JwtService
 ) {
 
-    val findUser: (identity: String) -> User? = { userIdentity ->
+    val findUser: (identity: String) -> User = { userIdentity ->
         userRepository.findByUsernameOrEmail(identifier = userIdentity).let {
             when(it.isPresent) {
                 true -> it.get()
@@ -26,8 +28,30 @@ class ControllerService(
     }
 
     fun getAccessToken(credentials: AccessTokenRequest): ResponseEntity<*> {
-        println(credentials)
-        return ResponseEntity.status(200).body(credentials)
+        val user = findUser(credentials.clientId)
+        if(user.authenticate(credentials.clientSecret)) {
+            val payload = mapOf(
+                "id" to user.id,
+                "username" to user.userName,
+                "email" to user.email,
+                "roles" to user.getRoles().map { mapOf("name" to it.name, "description" to it.description ) },
+                "groups" to user.getGroups().map { mapOf("name" to it.name, "description" to it.description ) }
+            )
+
+            val token = jwtService.generateJwtToken(payload)
+
+            return ResponseEntity.status(200).body(
+                mapOf(
+                    "token" to token,
+                    "expires_in" to jwtService.jwtExpirationMs,
+                    "realm" to "Bearer"
+                )
+            )
+        }
+
+        throw EntryVenturesException(HttpStatus.UNAUTHORIZED) {
+            "Invalid username or password"
+        }
     }
 
     fun sendResponse(
