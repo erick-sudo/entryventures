@@ -4,6 +4,7 @@ import com.entryventures.extensions.charactersUpto
 import com.entryventures.services.ControllerService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -14,6 +15,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
 class GlobalExceptionHandler(
@@ -22,25 +24,24 @@ class GlobalExceptionHandler(
 
     @ExceptionHandler(EntryVenturesException::class)
     fun handleEntryVenturesException(ex: EntryVenturesException): ResponseEntity<*>? {
-        return controllerService.sendResponse(ex.serverStatus, mapOf("error" to ex.message))
+        return controllerService.response(ex.serverStatus, mapOf("error" to ex.message))
     }
 
     @ExceptionHandler(AccessDeniedException::class)
     fun handleAccessDeniedException(ex: AccessDeniedException?): ResponseEntity<*>? {
-        return controllerService.sendResponse(HttpStatus.FORBIDDEN, mapOf("error" to "Forbidden Access", "message" to "Please contact your administrator"))
+        return controllerService.response(HttpStatus.FORBIDDEN, mapOf("error" to "Forbidden Access", "message" to "Please contact your administrator"))
     }
 
     // Handle DuplicateKeyException
     @ExceptionHandler(DuplicateKeyException::class)
     fun handleDuplicateKeyException(ex: DuplicateKeyException?): ResponseEntity<*>? {
-        return controllerService.sendResponse(HttpStatus.CONFLICT, mapOf("error" to "A record already exists bearing the supplied information."))
+        return controllerService.response(HttpStatus.CONFLICT, mapOf("error" to "A record already exists bearing the supplied information."))
     }
 
     // Handle HttpMessageConversionException
     @ExceptionHandler(HttpMessageConversionException::class)
     fun handleHttpMessageConversionException(ex: HttpMessageConversionException): ResponseEntity<*>? {
-        // Create a custom error response or log the exception
-        return controllerService.sendResponse(HttpStatus.UNPROCESSABLE_ENTITY, mapOf("error" to "Invalid request body", "message" to "${ex.message?.charactersUpto(':')}"))
+        return controllerService.response(HttpStatus.UNPROCESSABLE_ENTITY, mapOf("error" to "Invalid request body", "message" to "${ex.message?.charactersUpto(':')}"))
     }
 
     // Handle Constraint Violation Errors
@@ -49,6 +50,12 @@ class GlobalExceptionHandler(
         val errors: MutableMap<String, Any> = HashMap()
         errors["constraint_violations"] = ex.constraintViolations
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body<Map<String, Any>>(errors)
+    }
+
+    // Handle data integrity violation exceptions
+    @ExceptionHandler(DataIntegrityViolationException::class)
+    fun handleDataIntegrityViolationExceptions(ex: DataIntegrityViolationException): ResponseEntity<*> {
+        return controllerService.response(HttpStatus.UNPROCESSABLE_ENTITY, mapOf("error" to "Database integrity violation error occurred"))
     }
 
     // Handle MethodArgumentNotValidException
@@ -69,22 +76,25 @@ class GlobalExceptionHandler(
     }
 
     @ExceptionHandler(AuthenticationException::class)
-    fun handleException(e: AuthenticationException?): ResponseEntity<*>? {
-        return controllerService.sendResponse(HttpStatus.UNAUTHORIZED, mapOf("error" to "You are not authorized to access this resource"))
+    fun handleException(e: AuthenticationException): ResponseEntity<*>? {
+        return controllerService.response(HttpStatus.UNAUTHORIZED, mapOf("error" to "You are not authorized to access this resource", "reason" to e.message))
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
     fun methodNotAllowed(ex: HttpRequestMethodNotSupportedException, req: HttpServletRequest): ResponseEntity<*>? {
-        return controllerService.sendResponse(
+        return controllerService.response(
             HttpStatus.METHOD_NOT_ALLOWED,
             mapOf("error" to String.format("%s on  %s", ex.message, req.servletPath))
         )
     }
 
+    @ExceptionHandler(NoResourceFoundException::class)
+    fun handleNoResourceFoundException(e: NoResourceFoundException): ResponseEntity<*> {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("error" to e.message))
+    }
+
     @ExceptionHandler(Exception::class)
     fun handleException(e: Exception): ResponseEntity<*>? {
-        println(e.message)
-        e.printStackTrace()
-        return controllerService.sendResponse(HttpStatus.INTERNAL_SERVER_ERROR, mapOf("error" to "An internal server error occurred"))
+        return controllerService.response(HttpStatus.INTERNAL_SERVER_ERROR, mapOf("error" to "An internal server error occurred"))
     }
 }

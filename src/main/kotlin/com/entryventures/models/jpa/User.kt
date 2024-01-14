@@ -18,7 +18,7 @@ class User() {
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(columnDefinition = "VARCHAR(36)")
-    lateinit var id: String;
+    lateinit var id: String
 
     @Column(nullable = false)
     lateinit var firstName: String
