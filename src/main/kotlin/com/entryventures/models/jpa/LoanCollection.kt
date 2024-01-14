@@ -1,6 +1,9 @@
 package com.entryventures.models.jpa
 
 import com.entryventures.models.PaymentMethod
+import com.entryventures.models.dto.LoanCollectionDto
+import com.entryventures.repository.LoanRepository
+import com.entryventures.services.Crud
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.persistence.*
@@ -10,7 +13,7 @@ import java.util.Date
 
 @Entity
 @Table(name = "loan_collections")
-class Collection {
+class LoanCollection() {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
@@ -31,5 +34,26 @@ class Collection {
 
     @Column(name = "payment_method", nullable = false)
     @JsonProperty("payment_method")
+    @NotBlank
     var paymentMethod: PaymentMethod = PaymentMethod.Cash
+
+    constructor(loanCollectionDto: LoanCollectionDto, loanRepository: LoanRepository): this() {
+        id = loanCollectionDto.id
+        loan = Crud.find {
+            loanRepository.findById(loanCollectionDto.loanId)
+        }
+        collectionDate = loanCollectionDto.collectionDate
+        amount = loanCollectionDto.amount
+        paymentMethod = loanCollectionDto.paymentMethod
+    }
+
+    fun toLoanCollectionDto(): LoanCollectionDto {
+        return LoanCollectionDto(
+            id = id,
+            loanId = loan.id,
+            collectionDate = collectionDate,
+            amount = amount,
+            paymentMethod = paymentMethod
+        )
+    }
 }

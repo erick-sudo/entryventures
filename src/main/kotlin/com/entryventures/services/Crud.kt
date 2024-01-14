@@ -7,7 +7,7 @@ import java.util.*
 object Crud {
     inline fun <reified T> find(entityFinder: () -> Optional<T>): T {
 
-        val optionalEntity: Optional<T> =  entityFinder()
+        val optionalEntity =  entityFinder()
 
         if (optionalEntity.isPresent) {
             return optionalEntity.get()

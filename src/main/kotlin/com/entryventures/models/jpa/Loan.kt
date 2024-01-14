@@ -31,7 +31,7 @@ class Loan() {
     // One-to-many relationship with Collection
     @OneToMany(mappedBy = "loan")
     @JsonIgnore
-    var collections: List<Collection> = listOf()
+    var loanCollections: List<LoanCollection> = listOf()
 
     // one loan belongs to one client
     // One-to-one relationship with client

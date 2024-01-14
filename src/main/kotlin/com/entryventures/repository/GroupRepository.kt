@@ -6,7 +6,6 @@ import jakarta.transaction.Transactional
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface GroupRepository : JpaRepository<Group, String> {
-
     @Transactional
     fun findByName(name: String): Group?
 }

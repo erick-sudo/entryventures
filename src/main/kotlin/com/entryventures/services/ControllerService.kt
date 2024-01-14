@@ -2,27 +2,29 @@ package com.entryventures.services
 
 import com.entryventures.exceptions.EntryVenturesException
 import com.entryventures.models.dto.AccessTokenRequest
+import com.entryventures.models.dto.LoanCollectionDto
 import com.entryventures.models.dto.LoanDto
 import com.entryventures.models.jpa.Client
 import com.entryventures.models.jpa.Loan
+import com.entryventures.models.jpa.LoanCollection
 import com.entryventures.models.jpa.User
 import com.entryventures.repository.ClientRepository
+import com.entryventures.repository.LoanCollectionRepository
 import com.entryventures.repository.LoanRepository
 import com.entryventures.repository.UserRepository
 import com.entryventures.security.JwtService
 import com.entryventures.security.PasswordService
-import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
-import java.util.Optional
 
 @Service
 class ControllerService(
     private val userRepository: UserRepository,
     private val jwtService: JwtService,
     private val loanRepository: LoanRepository,
-    private val clientRepository: ClientRepository
+    private val clientRepository: ClientRepository,
+    private val loanCollectionRepository: LoanCollectionRepository
 ) {
 
     fun saveUserWithPassword(user: User, password: String): User  {
@@ -78,6 +80,26 @@ class ControllerService(
     ): Loan {
         return Crud.find {
             loanRepository.findById(loanId)
+        }
+    }
+
+    fun getLoanCollections(): List<LoanCollection> {
+        return loanCollectionRepository.findAll().toList()
+    }
+
+    fun createLoanCollection(
+        loanCollectionDto: LoanCollectionDto
+    ): LoanCollection {
+        val loanCollection = LoanCollection(loanCollectionDto, loanRepository)
+        loanCollectionRepository.save(loanCollection)
+        return loanCollection
+    }
+
+    fun showLoanCollection(
+        loanCollectionID: String
+    ): LoanCollection {
+        return Crud.find {
+            loanCollectionRepository.findById(loanCollectionID)
         }
     }
 
