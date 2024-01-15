@@ -16,7 +16,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver
 @Component
 class EntryVenturesAuthenticationEntryPoint(
     // Injecting the DefaultHandlerExceptionHandler and delegating the handler to this resolver.
-    // This security exception can now be handled with controller advice with an exception hadnler method
+    // This security exception can now be handled with controller advice with an exception handler method
     @Qualifier("handlerExceptionResolver") val resolver: HandlerExceptionResolver
 ) : AuthenticationEntryPoint {
 

@@ -20,7 +20,7 @@ class Loan() {
     lateinit var id: String
 
     @JsonProperty("amount")
-    var amount: Int = 0
+    var amount: Float = 0f
 
     @Column(name = "status", nullable = false)
     @JsonProperty("status")
@@ -39,6 +39,13 @@ class Loan() {
     @JoinColumn(name = "client_id", nullable = false)
     @JsonIgnore
     lateinit var client: Client
+
+    // A loan has one disbursement schedule
+    // One-to-one relationship with LoanDisbursementSchedule
+    @OneToOne(mappedBy = "loan")
+    @JsonIgnore
+    lateinit var loanDisbursementSchedule: LoanDisbursementSchedule
+
 
     constructor(loanDto: LoanDto, clientRepository: ClientRepository) : this() {
         this.amount = loanDto.amount

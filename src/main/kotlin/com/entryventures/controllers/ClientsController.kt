@@ -26,4 +26,14 @@ class ClientsController(
     fun createClient(@Valid @RequestBody client: Client): ResponseEntity<*> {
         return controllerService.response(httpStatus = HttpStatus.CREATED, controllerService.createClient(client))
     }
+
+    @PatchMapping("/clients/{clientId}")
+    fun updateClient(@RequestBody payload: Map<String, String>, @PathVariable("clientId") clientId: String): ResponseEntity<*> {
+        return controllerService.response(httpStatus = HttpStatus.CREATED, controllerService.updateClient(clientId, payload))
+    }
+
+    @DeleteMapping("/clients/{clientId}")
+    fun deleteClient(@PathVariable("clientId") clientId: String): ResponseEntity<*> {
+        return controllerService.response(httpStatus = HttpStatus.NO_CONTENT, controllerService.deleteClient(clientId))
+    }
 }

@@ -2,6 +2,7 @@ package com.entryventures.exceptions;
 
 import com.entryventures.extensions.charactersUpto
 import com.entryventures.services.ControllerService
+import io.jsonwebtoken.ExpiredJwtException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
 import org.springframework.dao.DataIntegrityViolationException
@@ -24,7 +25,12 @@ class GlobalExceptionHandler(
 
     @ExceptionHandler(EntryVenturesException::class)
     fun handleEntryVenturesException(ex: EntryVenturesException): ResponseEntity<*>? {
-        return controllerService.response(ex.serverStatus, mapOf("error" to ex.message))
+        val errorDescription = mutableMapOf<String, Any>()
+        ex.description?.let {
+            errorDescription["description"] = ex.description!!
+        }
+        errorDescription["error"] = ex.message
+        return controllerService.response(ex.serverStatus, errorDescription)
     }
 
     @ExceptionHandler(AccessDeniedException::class)
@@ -76,8 +82,8 @@ class GlobalExceptionHandler(
     }
 
     @ExceptionHandler(AuthenticationException::class)
-    fun handleException(e: AuthenticationException): ResponseEntity<*>? {
-        return controllerService.response(HttpStatus.UNAUTHORIZED, mapOf("error" to "You are not authorized to access this resource", "reason" to e.message))
+    fun handleAuthenticationException(e: AuthenticationException): ResponseEntity<*>? {
+        return controllerService.response(HttpStatus.UNAUTHORIZED, mapOf("error" to e.message))
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
@@ -95,6 +101,7 @@ class GlobalExceptionHandler(
 
     @ExceptionHandler(Exception::class)
     fun handleException(e: Exception): ResponseEntity<*>? {
+        e.printStackTrace()
         return controllerService.response(HttpStatus.INTERNAL_SERVER_ERROR, mapOf("error" to "An internal server error occurred"))
     }
 }

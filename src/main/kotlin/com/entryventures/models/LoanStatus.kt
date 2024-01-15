@@ -3,10 +3,10 @@ package com.entryventures.models
 enum class LoanStatus(
     private var status: String
 ) {
-    Pending("Pending approval"),
+    Pending("Pending"),
     Approved("Approved"),
     Disbursed("Disbursed"),
-    Closed("Completed and closed");
+    Closed("Closed");
 
     override fun toString(): String = status
 }

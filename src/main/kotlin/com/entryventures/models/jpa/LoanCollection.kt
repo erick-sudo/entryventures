@@ -30,11 +30,10 @@ class LoanCollection() {
     var collectionDate: Date = Date()
 
     @Column(nullable = false)
-    var amount: Int = 0
+    var amount: Float = 0f
 
     @Column(name = "payment_method", nullable = false)
     @JsonProperty("payment_method")
-    @NotBlank
     var paymentMethod: PaymentMethod = PaymentMethod.Cash
 
     constructor(loanCollectionDto: LoanCollectionDto, loanRepository: LoanRepository): this() {
