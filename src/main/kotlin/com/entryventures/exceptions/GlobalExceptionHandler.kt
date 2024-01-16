@@ -17,6 +17,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import kotlin.reflect.typeOf
 
 @RestControllerAdvice
 class GlobalExceptionHandler(
@@ -47,7 +48,8 @@ class GlobalExceptionHandler(
     // Handle HttpMessageConversionException
     @ExceptionHandler(HttpMessageConversionException::class)
     fun handleHttpMessageConversionException(ex: HttpMessageConversionException): ResponseEntity<*>? {
-        return controllerService.response(HttpStatus.UNPROCESSABLE_ENTITY, mapOf("error" to "Invalid request body", "message" to "${ex.message?.charactersUpto(':')}"))
+        // "message" to "${ex.message?.charactersUpto(':')}"
+        return controllerService.response(HttpStatus.UNPROCESSABLE_ENTITY, mapOf("error" to "Invalid request body"))
     }
 
     // Handle Constraint Violation Errors
@@ -61,9 +63,12 @@ class GlobalExceptionHandler(
     // Handle data integrity violation exceptions
     @ExceptionHandler(DataIntegrityViolationException::class)
     fun handleDataIntegrityViolationExceptions(ex: DataIntegrityViolationException): ResponseEntity<*> {
-        return controllerService.response(HttpStatus.UNPROCESSABLE_ENTITY, mapOf("error" to "Database integrity violation error occurred"))
+        return controllerService.response(HttpStatus.CONFLICT, mapOf("error" to ex.message.let { message ->
+            (message?.charactersUpto(']', message?.indexOf("=") ?: 0)?.replace("[(=)]+".toRegex(), "") ?: "").trim()
+        }))
     }
 
+    // Field constraint validation errors
     // Handle MethodArgumentNotValidException
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationErrors(ex: MethodArgumentNotValidException): ResponseEntity<*>? {

@@ -44,7 +44,7 @@ class Loan() {
     // One-to-one relationship with LoanDisbursementSchedule
     @OneToOne(mappedBy = "loan")
     @JsonIgnore
-    lateinit var loanDisbursementSchedule: LoanDisbursementSchedule
+    var loanDisbursementSchedule: LoanDisbursementSchedule? = null
 
 
     constructor(loanDto: LoanDto, clientRepository: ClientRepository) : this() {

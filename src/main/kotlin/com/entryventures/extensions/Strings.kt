@@ -9,9 +9,9 @@ import java.util.*
 const val EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$"
 const val DATE_REGEX = "[0-9]{2}/[0-9]{2}/[0-9]{4}"
 
-fun String.charactersUpto(stop: Char): String {
+fun String.charactersUpto(stop: Char, start: Int = 0): String {
     val firstOccurrence = this.indexOf(stop)
-    return this.substring(0..<firstOccurrence)
+    return this.substring(start..<firstOccurrence)
 }
 
 fun String.toLoanStatus(): LoanStatus {

@@ -75,4 +75,9 @@ class LoansController(
     fun deleteLoan(@PathVariable("loanId") loanId: String): ResponseEntity<*> {
         return controllerService.response(httpStatus = HttpStatus.NO_CONTENT, controllerService.deleteLoan(loanId))
     }
+
+    @GetMapping("/loans/{loanId}/status/approve")
+    fun approveLoan(@PathVariable("loanId") loanId: String): ResponseEntity<*> {
+        return controllerService.response(httpStatus = HttpStatus.ACCEPTED, controllerService.approveLoan(loanId))
+    }
 }

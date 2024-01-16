@@ -9,14 +9,8 @@ import com.entryventures.models.LoanStatus
 import com.entryventures.models.dto.AccessTokenRequest
 import com.entryventures.models.dto.LoanCollectionDto
 import com.entryventures.models.dto.LoanDto
-import com.entryventures.models.jpa.Client
-import com.entryventures.models.jpa.Loan
-import com.entryventures.models.jpa.LoanCollection
-import com.entryventures.models.jpa.User
-import com.entryventures.repository.ClientRepository
-import com.entryventures.repository.LoanCollectionRepository
-import com.entryventures.repository.LoanRepository
-import com.entryventures.repository.UserRepository
+import com.entryventures.models.jpa.*
+import com.entryventures.repository.*
 import com.entryventures.security.JwtService
 import com.entryventures.security.PasswordService
 import org.springframework.data.domain.PageRequest
@@ -35,7 +29,8 @@ class ControllerService(
     private val jwtService: JwtService,
     private val loanRepository: LoanRepository,
     private val clientRepository: ClientRepository,
-    private val loanCollectionRepository: LoanCollectionRepository
+    private val loanCollectionRepository: LoanCollectionRepository,
+    private val loanDisbursementScheduleRepository: LoanDisbursementScheduleRepository
 ) {
 
     fun saveUserWithPassword(user: User, password: String): User  {
@@ -171,6 +166,31 @@ class ControllerService(
         }
 
         return loanCollectionRepository.findLoanCollectionsByLoan(loan.id, PageRequest.of(pageNumber - 1, pageSize))
+    }
+
+    fun approveLoan(loanId: String): Map<String, String> {
+        Crud.find {
+            loanRepository.findById(loanId)
+        }.apply {
+            if(loanDisbursementSchedule == null) {
+                loanDisbursementSchedule = LoanDisbursementSchedule().let { lds ->
+                    lds.loan = this
+                    loanDisbursementScheduleRepository.save(lds)
+
+                    this.status = LoanStatus.Approved
+                    loanRepository.save(this)
+                    lds
+                }
+            } else {
+                throw EntryVenturesException(HttpStatus.CONFLICT) {
+                    loanDisbursementSchedule?.let {
+                        if(it.processed) if (status == LoanStatus.Closed) "Loan completed and closed" else "Loan already disbursed" else "Loan is awaiting disbursement"
+                    } ?: "Pending approval"
+                }
+            }
+        }
+
+        return mapOf("message" to "Loan approved successfully")
     }
 
     fun getLoanCollections(): List<LoanCollection> {

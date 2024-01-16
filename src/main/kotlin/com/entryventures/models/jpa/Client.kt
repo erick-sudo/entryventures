@@ -1,9 +1,12 @@
 package com.entryventures.models.jpa
 
+import com.entryventures.extensions.isValidEmail
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.persistence.*
+import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import org.hibernate.annotations.GenericGenerator
 
 @Entity
@@ -29,10 +32,16 @@ class Client  {
     @Column(name = "email", nullable = false, unique = true)
     @JsonProperty("email")
     @NotBlank
+    @Email
     lateinit var email: String
 
     @Column(name = "address", nullable = false)
     @JsonProperty("address")
     @NotBlank
     lateinit var address: String
+
+    @Column(name = "phone", nullable = false)
+    @JsonProperty("phone")
+    @NotNull
+    lateinit var phone: String
 }

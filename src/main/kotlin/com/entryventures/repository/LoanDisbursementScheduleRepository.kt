@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.Query
 
 interface LoanDisbursementScheduleRepository: JpaRepository<LoanDisbursementSchedule, String> {
 
-    @Query("SELECT ld FROM LoanDisbursementSchedule ld WHERE ld.processed = true")
+    @Query("SELECT ld FROM LoanDisbursementSchedule ld WHERE ld.processed = false")
     fun findUnprocessedLoanDisbursementSchedules(pageable: Pageable): List<LoanDisbursementSchedule>
 }

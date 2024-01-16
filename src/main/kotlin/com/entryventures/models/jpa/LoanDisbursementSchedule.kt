@@ -17,6 +17,6 @@ class LoanDisbursementSchedule {
 
     // A disbursement schedule belongs to a Loan
     @OneToOne
-    @JoinColumn(name = "loan_id")
+    @JoinColumn(name = "loan_id", nullable = false)
     lateinit var loan: Loan
 }
