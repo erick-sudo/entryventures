@@ -46,7 +46,7 @@ class SecurityConfig(
                 corsConfigurer.configurationSource(corsCustomizer())
             }
             .authorizeHttpRequests { auth ->
-            auth.requestMatchers("/", "/entryventures/api/v1/auth/access-token").permitAll()
+            auth.requestMatchers("/", "/entryventures/api/v1/auth/access-token", "/entry-ventures/mpesa/callback/**").permitAll()
                 .anyRequest().authenticated()
         }
             .exceptionHandling { exc ->

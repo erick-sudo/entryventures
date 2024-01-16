@@ -3,13 +3,9 @@ package com.entryventures.models.jpa
 import com.entryventures.security.PasswordService
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
-import lombok.AllArgsConstructor
-import lombok.NoArgsConstructor
 import org.hibernate.annotations.GenericGenerator
 import org.springframework.security.core.GrantedAuthority
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "_user")
 class User() {

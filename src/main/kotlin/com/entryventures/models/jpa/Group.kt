@@ -3,13 +3,11 @@ package com.entryventures.models.jpa;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.security.core.GrantedAuthority;
 
 @Entity
 @Table(name = "groups")
-@NoArgsConstructor
 class Group(name: String, description: String) : GrantedAuthority {
 
     @Id

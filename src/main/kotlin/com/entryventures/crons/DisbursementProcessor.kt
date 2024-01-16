@@ -1,27 +1,31 @@
 package com.entryventures.crons
 
 import com.entryventures.apis.Apis
+import com.entryventures.models.LoanStatus
 import com.entryventures.models.jpa.Loan
 import com.entryventures.models.jpa.LoanDisbursementSchedule
 import com.entryventures.repository.LoanDisbursementScheduleRepository
+import com.entryventures.repository.LoanRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import java.util.*
 
 const val NUMBER_OF_DISBURSEMENT_WORKERS = 2
 
 @Component
 class DisbursementProcessor(
-    private val loanDisbursementScheduleRepository: LoanDisbursementScheduleRepository
+    private val loanDisbursementScheduleRepository: LoanDisbursementScheduleRepository,
+    private val loanRepository: LoanRepository
 ) {
 
     /**
      * Process loan disbursements within a 10 minutes interval
      * When a loan is approved, it gets disbursed within a ten-minute timeline
      */
-    @Scheduled(fixedRate = 600000)
+    @Scheduled(fixedRate = 10000)
     fun initiateDisbursements() {
         // Obtain the first 1000 unprocessed loans awaiting disbursement
         val loanDisbursementSchedules = loanDisbursementScheduleRepository.findUnprocessedLoanDisbursementSchedules(PageRequest.of(0, 1000))
@@ -51,7 +55,19 @@ class DisbursementProcessor(
 
             // Database sync
             successDisbursementChannel.toList().forEach { disbursedLoan ->
-                println("${disbursedLoan.id} \t ${disbursedLoan.amount}")
+                disbursedLoan.loanDisbursementSchedule?.apply {
+                    // Switch schedule to handled
+                    processed = true
+                    // Persist to database
+                    loanDisbursementScheduleRepository.save(this)
+                }
+
+                disbursedLoan.apply {
+                    // Switch loan status to DISBURSED
+                    disbursedLoan.status = LoanStatus.Disbursed
+                    // Persist to database
+                    loanRepository.save(disbursedLoan)
+                }
             }
         }
     }
@@ -65,6 +81,7 @@ class DisbursementProcessor(
         disbursementChannel: ReceiveChannel<LoanDisbursementSchedule>,
         successDisbursementChannel: SendChannel<Loan>
     ) {
+        // Send each schedule in the channel for processing
         for(schedule in disbursementChannel) {
             processTransaction(schedule, successDisbursementChannel)
         }
@@ -80,13 +97,49 @@ class DisbursementProcessor(
         successDisbursementChannel: SendChannel<Loan>
     ) {
 
-        val accessTokenResponse = Apis.MPESA_CLIENT.accessToken()
-        println(accessTokenResponse)
+        // Obtain mpesa authorization access token
+        val accessTokenResponse = Apis.httpRequestWrapper(
+            request = {
+                Apis.MPESA_CLIENT.accessToken()
+            },
+            clientErrorHandler = { status, responseBody ->
+                println("${Date()} MPESA_AUTHORIZATION_API: $status :  ${responseBody?.string()}")
+            },
+            serverErrorHandler = { status, responseBody ->
+                println("${Date()} MPESA_AUTHORIZATION_API: $status :  ${responseBody?.string()}")
+            }
+        )
 
-        try {
-            successDisbursementChannel.send(loanDisbursementSchedule.loan)
-        } catch (e: ClosedSendChannelException) {
-            // Handle channel closed before success acknowledgement
+        accessTokenResponse?.apply {
+            // Successful access token request
+            val b2cResponse = Apis.httpRequestWrapper(
+                request = {
+                    Apis.MPESA_CLIENT.b2c(
+                        payload = mapOf(
+                            "callback_url" to "http://localhost:8080/entry-ventures/mpesa/callback/b2c"
+                        ),
+                        authorization = "Bearer $accessToken"
+                    )
+                },
+                clientErrorHandler = { status, responseBody ->
+                    println("${Date()} MPESA_B2C_API: $status :  ${responseBody?.string()}")
+                },
+                serverErrorHandler = { status, responseBody ->
+                    println("${Date()} MPESA_B2C_API: $status :  ${responseBody?.string()}")
+                }
+            )
+
+            b2cResponse?.let { b2cRes ->
+                // Successful b2c initiation
+                println("${Date()} MPESA_B2C_SUCCESS: LOANID: ${loanDisbursementSchedule.loan.id}  :RESPONSE $b2cRes")
+                try {
+                    // Push to accumulator channel for finalization
+                    successDisbursementChannel.send(loanDisbursementSchedule.loan)
+                } catch (e: ClosedSendChannelException) {
+                    // Handle channel closed before success acknowledgement
+                    println("${Date()} MPESA_B2C_SUCCESS_CHANNEL_MISS: LOANID: ${loanDisbursementSchedule.loan.id}  :RESPONSE $b2cRes")
+                }
+            }
         }
     }
 }

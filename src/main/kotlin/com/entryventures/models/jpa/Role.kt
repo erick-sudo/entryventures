@@ -3,15 +3,11 @@ package com.entryventures.models.jpa;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.security.core.GrantedAuthority;
 
-@Setter
 @Entity
 @Table(name = "roles")
-@NoArgsConstructor
 class Role(
     name: String,
     description: String
