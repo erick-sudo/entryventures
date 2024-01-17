@@ -1,25 +1,47 @@
 package com.entryventures.apis
 
+import com.entryventures.apis.mpesa.MpesaAccessTokenResponse
+import com.entryventures.apis.mpesa.MpesaClient
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.IOException
 import java.net.ConnectException
 import java.net.UnknownHostException
+import java.util.*
+
+private const val MPESA_BASEURL = "https://sandbox.safaricom.co.ke/"
 
 object Apis {
 
     val MPESA_CLIENT: MpesaClient by lazy {
         Retrofit.Builder()
-            .baseUrl("http://localhost:3001/mpesa/")
+            .baseUrl(MPESA_BASEURL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(OkHttpClient.Builder().build())
             .build()
             .create(MpesaClient::class.java)
     }
 
+    suspend fun requestMpesaAccessToken(
+        clientErrorHandler: (Int, ResponseBody?) -> Unit = {_,_ -> },
+        serverErrorHandler: (Int, ResponseBody?) -> Unit = {_,_ -> },
+        connectionErrorHandler: () -> Unit = {},
+        unknownHostErrorHandler: () -> Unit = {}
+    ): MpesaAccessTokenResponse? {
+        return httpRequestWrapper(
+            request = {
+                MPESA_CLIENT.accessToken(
+                    authorization = "Basic bVJmUXd1OGpBUkdSYVlKdFZXWkE3OVlhTHB0bWs4cDY6dlh6SmJtMTZBcjhLOVpWOQ=="
+                )
+            },
+            clientErrorHandler = clientErrorHandler,
+            serverErrorHandler = serverErrorHandler,
+            connectionErrorHandler = connectionErrorHandler,
+            unknownHostErrorHandler = unknownHostErrorHandler
+        )
+    }
 
     suspend fun <T> httpRequestWrapper(
         request: suspend () -> T,

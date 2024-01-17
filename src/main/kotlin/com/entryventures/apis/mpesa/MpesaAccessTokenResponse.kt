@@ -1,4 +1,4 @@
-package com.entryventures.apis
+package com.entryventures.apis.mpesa
 
 import com.google.gson.annotations.SerializedName
 

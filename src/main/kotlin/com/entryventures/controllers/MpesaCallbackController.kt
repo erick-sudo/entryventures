@@ -1,6 +1,8 @@
 package com.entryventures.controllers
 
+import com.entryventures.exceptions.EntryVenturesException
 import com.entryventures.services.ControllerService
+import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -18,6 +20,23 @@ class MpesaCallbackController(
     @PostMapping("/stk")
     fun stkExpressCallback(@RequestBody payload: Map<String, String>): ResponseEntity<*> {
         return controllerService.response(HttpStatus.OK, mapOf("message" to "Success"))
+    }
+
+    @PostMapping("/request-stk")
+    fun stkRequest(@RequestBody clientStkReq: Map<String, Long>): ResponseEntity<*> = runBlocking {
+        if(clientStkReq["amount"] == null || clientStkReq["amount"]!! < 5) {
+            throw EntryVenturesException(HttpStatus.UNPROCESSABLE_ENTITY) { "Invalid amount" }
+        }
+        if(clientStkReq["phone"] == null || !("${clientStkReq["phone"]}".matches("254[0-9]{9}\$".toRegex()))) {
+            throw EntryVenturesException(HttpStatus.UNPROCESSABLE_ENTITY, errorDescription = {
+                val errors = mutableListOf("Required format 254XXXXXXXXX")
+                if(clientStkReq["phone"] == null) {
+                    errors += "Phone number can't be null"
+                }
+                errors
+            }) { "Invalid phone number" }
+        }
+        controllerService.response(HttpStatus.OK, controllerService.initiateStk(clientStkReq["amount"]!!, clientStkReq["phone"]!!))
     }
 
     @PostMapping("/b2c")

@@ -1,6 +1,7 @@
 package com.entryventures.crons
 
 import com.entryventures.apis.Apis
+import com.entryventures.apis.mpesa.B2cRequestPayload
 import com.entryventures.models.LoanStatus
 import com.entryventures.models.jpa.Loan
 import com.entryventures.models.jpa.LoanDisbursementSchedule
@@ -12,8 +13,9 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.util.*
+import kotlin.math.roundToInt
 
-const val NUMBER_OF_DISBURSEMENT_WORKERS = 2
+private const val NUMBER_OF_DISBURSEMENT_WORKERS = 2
 
 @Component
 class DisbursementProcessor(
@@ -25,7 +27,7 @@ class DisbursementProcessor(
      * Process loan disbursements within a 10 minutes interval
      * When a loan is approved, it gets disbursed within a ten-minute timeline
      */
-    @Scheduled(fixedRate = 10000)
+    //@Scheduled(fixedRate = 10000)
     fun initiateDisbursements() {
         // Obtain the first 1000 unprocessed loans awaiting disbursement
         val loanDisbursementSchedules = loanDisbursementScheduleRepository.findUnprocessedLoanDisbursementSchedules(PageRequest.of(0, 1000))
@@ -98,10 +100,7 @@ class DisbursementProcessor(
     ) {
 
         // Obtain mpesa authorization access token
-        val accessTokenResponse = Apis.httpRequestWrapper(
-            request = {
-                Apis.MPESA_CLIENT.accessToken()
-            },
+        val accessTokenResponse = Apis.requestMpesaAccessToken(
             clientErrorHandler = { status, responseBody ->
                 println("${Date()} MPESA_AUTHORIZATION_API: $status :  ${responseBody?.string()}")
             },
@@ -115,8 +114,17 @@ class DisbursementProcessor(
             val b2cResponse = Apis.httpRequestWrapper(
                 request = {
                     Apis.MPESA_CLIENT.b2c(
-                        payload = mapOf(
-                            "callback_url" to "http://localhost:8080/entry-ventures/mpesa/callback/b2c"
+                        payload = B2cRequestPayload(
+                            originatorConversationID = loanDisbursementSchedule.loan.id,
+                            initiatorName = "testapi",
+                            commandID = "BusinessPayment",
+                            amount = "${loanDisbursementSchedule.loan.amount.roundToInt()}",
+                            partyA = "600996",
+                            partyB = "254${loanDisbursementSchedule.loan.client.phone}",
+                            remarks = "Loan Disbursement",
+                            queueTimeOutURL = "",
+                            resultURL = "http://localhost:8080/entry-ventures/mpesa/callback/b2c",
+                            occasion = "Loan Disbursement"
                         ),
                         authorization = "Bearer $accessToken"
                     )

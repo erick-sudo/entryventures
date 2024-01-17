@@ -1,5 +1,8 @@
 package com.entryventures.services
 
+import com.entryventures.apis.Apis
+import com.entryventures.apis.mpesa.B2cRequestPayload
+import com.entryventures.apis.mpesa.StkRequestPayload
 import com.entryventures.exceptions.EntryVenturesException
 import com.entryventures.extensions.isValidEmail
 import com.entryventures.extensions.toDate
@@ -18,10 +21,12 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
+import java.util.*
+import kotlin.math.roundToInt
 
-val LOAN_UPDATE_FIELDS = listOf("amount", "status")
-val CLIENT_UPDATE_FIELDS = listOf("name", "email", "address")
-val LOAN_COLLECTION_UPDATE_FIELDS = listOf("amount", "collection_date", "payment_method")
+private val LOAN_UPDATE_FIELDS = listOf("amount", "status")
+private val CLIENT_UPDATE_FIELDS = listOf("name", "email", "address")
+private val LOAN_COLLECTION_UPDATE_FIELDS = listOf("amount", "collection_date", "payment_method")
 
 @Service
 class ControllerService(
@@ -32,6 +37,72 @@ class ControllerService(
     private val loanCollectionRepository: LoanCollectionRepository,
     private val loanDisbursementScheduleRepository: LoanDisbursementScheduleRepository
 ) {
+
+    suspend fun initiateStk(amount: Long, phone: Long) {
+        val mpesaAccessTokenResponse = Apis.requestMpesaAccessToken(
+            clientErrorHandler = { status, responseBody ->
+                throw EntryVenturesException(
+                    serverStatus = HttpStatus.valueOf(status),
+                    errorDescription = {
+                        responseBody
+                    }) {
+                    "Request error"
+                }
+            },
+            serverErrorHandler = { status, _ ->
+                throw EntryVenturesException(HttpStatus.valueOf(status)) {
+                    "Error connecting to MPESA, please try again later"
+                }
+            },
+            connectionErrorHandler = {
+                throw EntryVenturesException(HttpStatus.INTERNAL_SERVER_ERROR) {
+                    "Error connecting to MPESA, please try again later"
+                }
+            },
+            unknownHostErrorHandler = {
+                throw EntryVenturesException(HttpStatus.INTERNAL_SERVER_ERROR) {
+                    "Error connecting to MPESA, please try again later"
+                }
+            }
+        )
+
+        mpesaAccessTokenResponse?.let {token ->
+            // Successful access token request
+            Apis.httpRequestWrapper(
+                request = {
+
+                    val timeStamp = PasswordService.timeStamp()
+
+                    Apis.MPESA_CLIENT.mpesaExpress(
+                        payload = StkRequestPayload(
+                            businessShortCode = "174379",
+                            password = PasswordService.toBase64(
+                                "174379",
+                                "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
+                                timeStamp
+                            ),
+                            timestamp = timeStamp,
+                            transactionType = "",
+                            amount = "$amount",
+                            partyA = "$phone",
+                            partyB = "174379",
+                            phoneNumber = "$phone",
+                            callBackURL = "https://grid-online.vercel.app", // "http://localhost:8080/entry-ventures/mpesa/callback/stk",
+                            accountReference = "Entry Ventures LTD",
+                            transactionDesc = "Loan installment payment"
+                        ),
+                        authorization = "Bearer ${token.accessToken}"
+                    )
+                },
+                clientErrorHandler = { status, responseBody ->
+                    println("${Date()} MPESA_B2C_API: $status :  ${responseBody?.string()}")
+                },
+                serverErrorHandler = { status, responseBody ->
+                    println("${Date()} MPESA_B2C_API: $status :  ${responseBody?.string()}")
+                }
+            )
+        }
+    }
 
     fun saveUserWithPassword(user: User, password: String): User  {
         val user1 = userRepository.findByUserName(user.userName)
