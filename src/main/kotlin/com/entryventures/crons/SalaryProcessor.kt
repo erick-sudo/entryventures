@@ -9,6 +9,8 @@ class SalaryProcessor {
     @Scheduled(cron = "0 0 8 LW * *") // Every last weekday of the month
     fun loanOfficersPayout() {
 
+        // Fetch Loan Officers
+
     }
 
     @Scheduled(cron = "0 0 8 L * *") // Every last day of the month

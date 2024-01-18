@@ -1,7 +1,6 @@
 package com.entryventures.crons
 
 import com.entryventures.apis.Apis
-import com.entryventures.apis.mpesa.B2cRequestPayload
 import com.entryventures.models.LoanStatus
 import com.entryventures.models.jpa.Loan
 import com.entryventures.models.jpa.LoanDisbursementSchedule
@@ -13,7 +12,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.util.*
-import kotlin.math.roundToInt
 
 private const val NUMBER_OF_DISBURSEMENT_WORKERS = 2
 
@@ -98,21 +96,11 @@ class DisbursementProcessor(
         loanDisbursementSchedule: LoanDisbursementSchedule,
         successDisbursementChannel: SendChannel<Loan>
     ) {
-
         // Process Business to Client Transaction
         Apis.MPESA_CLIENT.processB2CTransaction(
-                b2cRequestPayload = B2cRequestPayload(
-                        originatorConversationID = loanDisbursementSchedule.loan.id,
-                        initiatorName = "testapi",
-                        commandID = "BusinessPayment",
-                        amount = "${loanDisbursementSchedule.loan.amount.roundToInt()}",
-                        partyA = "600996",
-                        partyB = "254${loanDisbursementSchedule.loan.client.phone}",
-                        remarks = "Loan Disbursement",
-                        queueTimeOutURL = "",
-                        resultURL = "http://localhost:8080/entry-ventures/mpesa/callback/b2c",
-                        occasion = "Loan Disbursement"
-                ),
+                transactionId = loanDisbursementSchedule.loan.id,
+                customer = loanDisbursementSchedule.loan.client,
+                amount = loanDisbursementSchedule.loan.amount,
                 responseCallback = { b2cRes ->
                     // Successful b2c initiation
                     println("${Date()} MPESA_B2C_SUCCESS: LOANID: ${loanDisbursementSchedule.loan.id}  :RESPONSE $b2cRes")

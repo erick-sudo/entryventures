@@ -23,25 +23,6 @@ object Apis {
             .create(MpesaApi::class.java)
     }
 
-    suspend fun requestMpesaAccessToken(
-        clientErrorHandler: (Int, ResponseBody?) -> Unit = {_,_ -> },
-        serverErrorHandler: (Int, ResponseBody?) -> Unit = {_,_ -> },
-        connectionErrorHandler: () -> Unit = {},
-        unknownHostErrorHandler: () -> Unit = {}
-    ): MpesaAccessTokenResponse? {
-        return httpRequestWrapper(
-            request = {
-                MPESA_CLIENT.accessToken(
-                    authorization = "Basic bVJmUXd1OGpBUkdSYVlKdFZXWkE3OVlhTHB0bWs4cDY6dlh6SmJtMTZBcjhLOVpWOQ=="
-                )
-            },
-            clientErrorHandler = clientErrorHandler,
-            serverErrorHandler = serverErrorHandler,
-            connectionErrorHandler = connectionErrorHandler,
-            unknownHostErrorHandler = unknownHostErrorHandler
-        )
-    }
-
     suspend fun <T> httpRequestWrapper(
         request: suspend () -> T,
         clientErrorHandler: (Int, ResponseBody?) -> Unit = {_,_ -> },
