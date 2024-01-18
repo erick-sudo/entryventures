@@ -1,14 +1,16 @@
 package com.entryventures.models.jpa
 
+import com.entryventures.apis.mpesa.RegisteredMpesaClient
 import com.entryventures.security.PasswordService
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
+import jakarta.validation.constraints.NotNull
 import org.hibernate.annotations.GenericGenerator
 import org.springframework.security.core.GrantedAuthority
 
 @Entity
 @Table(name = "_user")
-class User() {
+class User() : RegisteredMpesaClient {
 
     @Id
     @GeneratedValue(generator = "uuid2")
@@ -17,19 +19,28 @@ class User() {
     lateinit var id: String
 
     @Column(nullable = false)
+    @NotNull
     lateinit var firstName: String
 
     @Column(nullable = true)
+    @NotNull
     lateinit var middleName: String
 
     @Column(nullable = false)
+    @NotNull
     lateinit var lastName: String
 
     @Column(nullable = false)
+    @NotNull
     lateinit var userName: String
 
     @Column(nullable = false)
+    @NotNull
     lateinit var email: String
+
+    @Column(nullable = false)
+    @NotNull
+    override lateinit var phone: String
 
     /**
      * Secondary constructor

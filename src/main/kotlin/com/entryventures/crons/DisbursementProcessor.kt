@@ -99,55 +99,31 @@ class DisbursementProcessor(
         successDisbursementChannel: SendChannel<Loan>
     ) {
 
-        // Obtain mpesa authorization access token
-        val accessTokenResponse = Apis.requestMpesaAccessToken(
-            clientErrorHandler = { status, responseBody ->
-                println("${Date()} MPESA_AUTHORIZATION_API: $status :  ${responseBody?.string()}")
-            },
-            serverErrorHandler = { status, responseBody ->
-                println("${Date()} MPESA_AUTHORIZATION_API: $status :  ${responseBody?.string()}")
-            }
+        // Process Business to Client Transaction
+        Apis.MPESA_CLIENT.processB2CTransaction(
+                b2cRequestPayload = B2cRequestPayload(
+                        originatorConversationID = loanDisbursementSchedule.loan.id,
+                        initiatorName = "testapi",
+                        commandID = "BusinessPayment",
+                        amount = "${loanDisbursementSchedule.loan.amount.roundToInt()}",
+                        partyA = "600996",
+                        partyB = "254${loanDisbursementSchedule.loan.client.phone}",
+                        remarks = "Loan Disbursement",
+                        queueTimeOutURL = "",
+                        resultURL = "http://localhost:8080/entry-ventures/mpesa/callback/b2c",
+                        occasion = "Loan Disbursement"
+                ),
+                responseCallback = { b2cRes ->
+                    // Successful b2c initiation
+                    println("${Date()} MPESA_B2C_SUCCESS: LOANID: ${loanDisbursementSchedule.loan.id}  :RESPONSE $b2cRes")
+                    try {
+                        // Push to accumulator channel for finalization
+                        successDisbursementChannel.send(loanDisbursementSchedule.loan)
+                    } catch (e: ClosedSendChannelException) {
+                        // Handle channel closed before success acknowledgement
+                        println("${Date()} MPESA_B2C_SUCCESS_CHANNEL_MISS: LOANID: ${loanDisbursementSchedule.loan.id}  :RESPONSE $b2cRes")
+                    }
+                }
         )
-
-        accessTokenResponse?.apply {
-            // Successful access token request
-            val b2cResponse = Apis.httpRequestWrapper(
-                request = {
-                    Apis.MPESA_CLIENT.b2c(
-                        payload = B2cRequestPayload(
-                            originatorConversationID = loanDisbursementSchedule.loan.id,
-                            initiatorName = "testapi",
-                            commandID = "BusinessPayment",
-                            amount = "${loanDisbursementSchedule.loan.amount.roundToInt()}",
-                            partyA = "600996",
-                            partyB = "254${loanDisbursementSchedule.loan.client.phone}",
-                            remarks = "Loan Disbursement",
-                            queueTimeOutURL = "",
-                            resultURL = "http://localhost:8080/entry-ventures/mpesa/callback/b2c",
-                            occasion = "Loan Disbursement"
-                        ),
-                        authorization = "Bearer $accessToken"
-                    )
-                },
-                clientErrorHandler = { status, responseBody ->
-                    println("${Date()} MPESA_B2C_API: $status :  ${responseBody?.string()}")
-                },
-                serverErrorHandler = { status, responseBody ->
-                    println("${Date()} MPESA_B2C_API: $status :  ${responseBody?.string()}")
-                }
-            )
-
-            b2cResponse?.let { b2cRes ->
-                // Successful b2c initiation
-                println("${Date()} MPESA_B2C_SUCCESS: LOANID: ${loanDisbursementSchedule.loan.id}  :RESPONSE $b2cRes")
-                try {
-                    // Push to accumulator channel for finalization
-                    successDisbursementChannel.send(loanDisbursementSchedule.loan)
-                } catch (e: ClosedSendChannelException) {
-                    // Handle channel closed before success acknowledgement
-                    println("${Date()} MPESA_B2C_SUCCESS_CHANNEL_MISS: LOANID: ${loanDisbursementSchedule.loan.id}  :RESPONSE $b2cRes")
-                }
-            }
-        }
     }
 }

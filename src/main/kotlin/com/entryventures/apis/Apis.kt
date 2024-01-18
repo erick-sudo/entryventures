@@ -1,7 +1,7 @@
 package com.entryventures.apis
 
 import com.entryventures.apis.mpesa.MpesaAccessTokenResponse
-import com.entryventures.apis.mpesa.MpesaClient
+import com.entryventures.apis.mpesa.MpesaApi
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import retrofit2.HttpException
@@ -9,19 +9,18 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.net.ConnectException
 import java.net.UnknownHostException
-import java.util.*
 
 private const val MPESA_BASEURL = "https://sandbox.safaricom.co.ke/"
 
 object Apis {
 
-    val MPESA_CLIENT: MpesaClient by lazy {
+    val MPESA_CLIENT: MpesaApi by lazy {
         Retrofit.Builder()
             .baseUrl(MPESA_BASEURL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(OkHttpClient.Builder().build())
             .build()
-            .create(MpesaClient::class.java)
+            .create(MpesaApi::class.java)
     }
 
     suspend fun requestMpesaAccessToken(

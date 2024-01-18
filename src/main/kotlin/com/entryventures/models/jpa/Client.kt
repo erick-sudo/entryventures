@@ -1,5 +1,6 @@
 package com.entryventures.models.jpa
 
+import com.entryventures.apis.mpesa.RegisteredMpesaClient
 import com.entryventures.extensions.isValidEmail
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -11,7 +12,7 @@ import org.hibernate.annotations.GenericGenerator
 
 @Entity
 @Table(name = "clients")
-class Client  {
+class Client : RegisteredMpesaClient  {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
@@ -43,5 +44,5 @@ class Client  {
     @Column(name = "phone", nullable = false)
     @JsonProperty("phone")
     @NotNull
-    lateinit var phone: String
+    override lateinit var phone: String
 }

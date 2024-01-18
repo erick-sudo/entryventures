@@ -21,6 +21,19 @@ class SuperUserService(
     fun initializeSuperUser() {
         val superUser = userRepository.findByUserName("johndoe")
 
+        val roles = listOf(
+                Role(name = "ROLE_LOAN_OFFICER", description = "Asses and approve loan applications"),
+                Role(name = "ROLE_DISBURSEMENT_OFFICER", description = "Authorize to disburse approved loans"),
+                Role(name = "ROLE_COLLECTION_OFFICER", description = "Manage loan collections based on schedule"),
+                Role(name = "ROLE_SYSTEM_ADMINISTRATOR", description = "User management, system configuration and maintenance"),
+                Role(name = "ROLE_MANAGER", description = "Oversee overall loan management process")
+        )
+
+        roles.filter { roleRepository.findByName(it.name) == null }.forEach { role ->
+            roleRepository.save(role)
+            println("${role.id} ${role.name}")
+        }
+
         if(superUser == null) {
 
             val superUser = User(
