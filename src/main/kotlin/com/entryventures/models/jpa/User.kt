@@ -1,8 +1,10 @@
 package com.entryventures.models.jpa
 
 import com.entryventures.apis.mpesa.RegisteredMpesaClient
+import com.entryventures.models.UserPosition
 import com.entryventures.security.PasswordService
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import org.hibernate.annotations.GenericGenerator
@@ -42,6 +44,11 @@ class User() : RegisteredMpesaClient {
     @NotNull
     override lateinit var phone: String
 
+    @Column(name = "position", nullable = false)
+    @JsonProperty("status")
+    @NotNull
+    var position = UserPosition.LoanOfficer
+
     /**
      * Secondary constructor
      * @param firstName First name of the user
@@ -55,13 +62,15 @@ class User() : RegisteredMpesaClient {
         middleName: String,
         lastName: String,
         userName: String,
-        email: String
+        email: String,
+        phone: String
     ) : this() {
         this.firstName = firstName
         this.middleName = middleName
         this.lastName = lastName
         this.userName = userName
         this.email = email
+        this.phone = phone
     }
 
     @Column(nullable = false)

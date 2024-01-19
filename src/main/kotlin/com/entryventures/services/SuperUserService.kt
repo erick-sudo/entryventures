@@ -41,7 +41,8 @@ class SuperUserService(
                 "Doe",
                 "Smith",
                 "johndoe",
-                "johndoe@example.com"
+                "johndoe@example.com",
+                "706087204"
             )
 
             if (roleRepository.findByName("ROLE_ADMIN") == null) {

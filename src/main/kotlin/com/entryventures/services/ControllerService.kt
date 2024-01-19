@@ -39,7 +39,7 @@ class ControllerService(
 ) {
 
     suspend fun initiateStk(amount: Long, phone: Long) {
-        val mpesaAccessTokenResponse = Apis.requestMpesaAccessToken(
+        val mpesaAccessTokenResponse = Apis.MPESA_CLIENT.requestMpesaAccessToken(
             clientErrorHandler = { status, responseBody ->
                 throw EntryVenturesException(
                     serverStatus = HttpStatus.valueOf(status),
