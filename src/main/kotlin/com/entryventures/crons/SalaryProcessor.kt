@@ -1,6 +1,6 @@
 package com.entryventures.crons
 
-import com.entryventures.apis.Apis
+import com.entryventures.apis.mpesa.MpesaTransactions
 import com.entryventures.models.UserPosition
 import com.entryventures.models.jpa.User
 import com.entryventures.repository.UserRepository
@@ -23,19 +23,15 @@ class SalaryProcessor(
             TaskManagers.processCounterChannelTasks<User, String>(
                 inputs = loanOfficers,
                 inputProcessor = { user ->
-                    Apis.MPESA_CLIENT.processB2CTransaction(
+                    MpesaTransactions.processB2CTransaction(
                         transactionId = user.id,
                         customer = user,
                         amount = 45000f,
-                        responseCallback = { b2cRes ->
-
-                        }
+                        responseCallback = {}
                     )
                     user.id
                 },
-                outputProcessor = { userId ->
-
-                }
+                outputReceiver = {}
             )
         }
     }
@@ -50,19 +46,15 @@ class SalaryProcessor(
             TaskManagers.processCounterChannelTasks<User, String>(
                 inputs = shareHolders,
                 inputProcessor = { user ->
-                    Apis.MPESA_CLIENT.processB2CTransaction(
+                    MpesaTransactions.processB2CTransaction(
                         transactionId = user.id,
                         customer = user,
                         amount = 90000f,
-                        responseCallback = { b2cRes ->
-
-                        }
+                        responseCallback = {}
                     )
                     user.id
                 },
-                outputProcessor = { userId ->
-
-                }
+                outputReceiver = {}
             )
         }
     }

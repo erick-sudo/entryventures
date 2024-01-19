@@ -2,6 +2,7 @@ package com.entryventures.services
 
 import com.entryventures.apis.Apis
 import com.entryventures.apis.mpesa.B2cRequestPayload
+import com.entryventures.apis.mpesa.MpesaTransactions
 import com.entryventures.apis.mpesa.StkRequestPayload
 import com.entryventures.exceptions.EntryVenturesException
 import com.entryventures.extensions.isValidEmail
@@ -38,8 +39,11 @@ class ControllerService(
     private val loanDisbursementScheduleRepository: LoanDisbursementScheduleRepository
 ) {
 
-    suspend fun initiateStk(amount: Long, phone: Long) {
-        val mpesaAccessTokenResponse = Apis.MPESA_CLIENT.requestMpesaAccessToken(
+    suspend fun initiateStk(amount: Long, phone: Long): Map<String, String>? {
+
+        var res: Map<String, String>? = null
+
+        val mpesaAccessTokenResponse = MpesaTransactions.requestMpesaAccessToken(
             clientErrorHandler = { status, responseBody ->
                 throw EntryVenturesException(
                     serverStatus = HttpStatus.valueOf(status),
@@ -68,7 +72,7 @@ class ControllerService(
 
         mpesaAccessTokenResponse?.let {token ->
             // Successful access token request
-            Apis.httpRequestWrapper(
+            res = Apis.httpRequestWrapper(
                 request = {
 
                     val timeStamp = PasswordService.timeStamp()
@@ -82,7 +86,7 @@ class ControllerService(
                                 timeStamp
                             ),
                             timestamp = timeStamp,
-                            transactionType = "",
+                            transactionType = "CustomerPayBillOnline",
                             amount = "$amount",
                             partyA = "$phone",
                             partyB = "174379",
@@ -102,6 +106,8 @@ class ControllerService(
                 }
             )
         }
+
+        return res
     }
 
     fun saveUserWithPassword(user: User, password: String): User  {

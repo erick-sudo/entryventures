@@ -1,6 +1,6 @@
 package com.entryventures.crons
 
-import com.entryventures.apis.Apis
+import com.entryventures.apis.mpesa.MpesaTransactions
 import com.entryventures.models.LoanStatus
 import com.entryventures.models.jpa.Loan
 import com.entryventures.models.jpa.LoanDisbursementSchedule
@@ -32,24 +32,23 @@ class DisbursementProcessor(
             TaskManagers.processCounterChannelTasks(
                 inputs = loanDisbursementSchedules,
                 inputProcessor = { processLoanDisbursementTransaction(it) },
-                outputProcessor = { disbursedLoan ->
+                outputReceiver = { disbursedLoans ->
+                    disbursedLoans.forEach { disbursedLoan ->
+                        // Database sync
+                        disbursedLoan.loanDisbursementSchedule?.apply {
+                            // Switch schedule to handled
+                            processed = true
+                            // Persist to database
+                            loanDisbursementScheduleRepository.save(this)
+                        }
 
-                    // Database sync
-
-                    disbursedLoan.loanDisbursementSchedule?.apply {
-                        // Switch schedule to handled
-                        processed = true
-                        // Persist to database
-                        loanDisbursementScheduleRepository.save(this)
+                        disbursedLoan.apply {
+                            // Switch loan status to DISBURSED
+                            disbursedLoan.status = LoanStatus.Disbursed
+                            // Persist to database
+                            loanRepository.save(disbursedLoan)
+                        }
                     }
-
-                    disbursedLoan.apply {
-                        // Switch loan status to DISBURSED
-                        disbursedLoan.status = LoanStatus.Disbursed
-                        // Persist to database
-                        loanRepository.save(disbursedLoan)
-                    }
-
                 }
             )
         }
@@ -66,7 +65,7 @@ class DisbursementProcessor(
         var loan: Loan? = null
 
         // Process Business to Client Transaction
-        Apis.MPESA_CLIENT.processB2CTransaction(
+        MpesaTransactions.processB2CTransaction(
                 transactionId = loanDisbursementSchedule.loan.id,
                 customer = loanDisbursementSchedule.loan.client,
                 amount = loanDisbursementSchedule.loan.amount,

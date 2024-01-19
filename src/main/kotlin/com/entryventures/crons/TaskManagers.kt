@@ -12,7 +12,7 @@ object TaskManagers {
     suspend fun <I, O> processCounterChannelTasks(
         inputs: List<I>,
         inputProcessor: suspend (I) -> O?,
-        outputProcessor: suspend (O) -> Unit
+        outputReceiver: suspend (List<O>) -> Unit
     ) = coroutineScope {
         val inputChannel = Channel<I>()
         val outputChannel = Channel<O>()
@@ -46,7 +46,6 @@ object TaskManagers {
                 launch {
                     for (input in inputChannel) {
                         inputProcessor(input)?.also { outputChannel.send(it) }
-
                     }
                 }
             }.joinAll()
@@ -54,8 +53,6 @@ object TaskManagers {
         }
 
         // Receive output
-        outputChannel.toList().forEach { output ->
-
-        }
+        outputReceiver(outputChannel.toList())
     }
 }

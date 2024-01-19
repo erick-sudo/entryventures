@@ -36,7 +36,7 @@ class MpesaCallbackController(
                 errors
             }) { "Invalid phone number" }
         }
-        controllerService.response(HttpStatus.OK, controllerService.initiateStk(clientStkReq["amount"]!!, clientStkReq["phone"]!!))
+        ResponseEntity.ok(controllerService.initiateStk(clientStkReq["amount"]!!, clientStkReq["phone"]!!))
     }
 
     @PostMapping("/b2c")
