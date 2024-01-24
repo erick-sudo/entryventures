@@ -2,6 +2,7 @@ package com.entryventures.controllers
 
 import com.entryventures.exceptions.EntryVenturesException
 import com.entryventures.services.ControllerService
+import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.Date
 
+@Tag(name = "Mpesa Callbacks", description = "Mpesa Transactions APIs")
 @RestController
 @RequestMapping("/entry-ventures/mpesa/callback")
 class MpesaCallbackController(

@@ -46,6 +46,9 @@ dependencies {
 	// Gson converter for Retrofit
 	implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
+	// Swagger
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.3")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
 }

@@ -2,11 +2,13 @@ package com.entryventures.controllers
 
 import com.entryventures.models.jpa.Client
 import com.entryventures.services.ControllerService
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
+@Tag(name = "Clients", description = "Clients management APIs")
 @RestController
 class ClientsController(
     private val controllerService: ControllerService

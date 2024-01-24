@@ -4,6 +4,11 @@ entry:
       jwtSecretKey: DQ7jcACh9Kyf0f0GdeVByA51AauNC1XBESMjteJl9Z2xFIrl9qasR35LeRzOsYjm73_SWKptrrWmsbc9tqwk40Ucn1NVQBMdpeJ8UD_eTArCJTwjlYY4MVgPUtjNz6lKPwJH8ZvSQuS_9QYjoTAKLv5VPV5UCJfC2BcvDgv1NZh02qS3vNMIsuHE_yDssN9RxuLm_wnQNPbWcjPNOiP8zZ5A0dxc48XSz289nCG1exo7JoCZ2IldAdNY2GY8ZMDQfMbCtIKkfFw
       jwtExpirationMs: 3600000
 
+docs:
+  openapi:
+    dev-url: http://localhost:8080
+    prod-url: https://localhost:8080
+
 spring:
   rabbitmq:
     host: localhost

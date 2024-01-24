@@ -3,6 +3,7 @@ package com.entryventures.controllers
 import com.entryventures.extensions.toLoanStatus
 import com.entryventures.models.dto.LoanDto
 import com.entryventures.services.ControllerService
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
+@Tag(name = "Loans", description = "Loan Management APIs")
 @RestController
 class LoansController(
     private val controllerService: ControllerService
