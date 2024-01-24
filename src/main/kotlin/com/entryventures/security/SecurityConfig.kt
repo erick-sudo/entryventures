@@ -1,5 +1,6 @@
 package com.entryventures.security
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider
@@ -18,7 +19,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 class SecurityConfig(
     private val entryVenturesAuthenticationEntryPoint: EntryVenturesAuthenticationEntryPoint,
     private val entryVenturesUserDetailsService: EntryVenturesUserDetailsService,
-    private val jwtService: JwtService
+    private val jwtService: JwtService,
+    @Value("{cors.origins}") private val allowedOrigins: String
 ) {
 
     private val authTokenFilter: () -> AuthorizationTokenFilter = @Bean { AuthorizationTokenFilter(entryVenturesUserDetailsService, jwtService) }
@@ -60,6 +62,8 @@ class SecurityConfig(
     }
 
     private fun corsCustomizer(): UrlBasedCorsConfigurationSource {
+
+        println(allowedOrigins)
 
         val configuration = CorsConfiguration()
         configuration.allowedOrigins = (listOf("http://localhost:5173"))

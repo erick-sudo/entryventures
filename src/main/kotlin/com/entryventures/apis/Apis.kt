@@ -1,5 +1,6 @@
 package com.entryventures.apis
 
+import com.entryventures.apis.coop.CoopApi
 import com.entryventures.apis.mpesa.MpesaAccessTokenResponse
 import com.entryventures.apis.mpesa.MpesaApi
 import okhttp3.OkHttpClient
@@ -11,6 +12,7 @@ import java.net.ConnectException
 import java.net.UnknownHostException
 
 private const val MPESA_BASEURL = "https://sandbox.safaricom.co.ke/"
+private const val COOP_BASEURL = "https://openapi-sandbox.co-opbank.co.ke/"
 
 object Apis {
 
@@ -21,6 +23,15 @@ object Apis {
             .client(OkHttpClient.Builder().build())
             .build()
             .create(MpesaApi::class.java)
+    }
+
+    val COOP_CLIENT: CoopApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(COOP_BASEURL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(OkHttpClient.Builder().build())
+            .build()
+            .create(CoopApi::class.java)
     }
 
     suspend fun <T> httpRequestWrapper(

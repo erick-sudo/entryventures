@@ -31,7 +31,9 @@ class SalaryProcessor(
                     )
                     user.id
                 },
-                outputReceiver = {}
+                outputReceiver = {
+
+                }
             )
         }
     }
