@@ -64,7 +64,7 @@ class GlobalExceptionHandler(
     @ExceptionHandler(DataIntegrityViolationException::class)
     fun handleDataIntegrityViolationExceptions(ex: DataIntegrityViolationException): ResponseEntity<*> {
         return controllerService.response(HttpStatus.CONFLICT, mapOf("error" to ex.message.let { message ->
-            (message?.charactersUpto(']', message?.indexOf("=") ?: 0)?.replace("[(=)]+".toRegex(), "") ?: "").trim()
+            (message?.charactersUpto(']', message.indexOf("="))?.replace("[(=)]+".toRegex(), "") ?: "").trim()
         }))
     }
 

@@ -6,8 +6,8 @@ entry:
 
 docs:
   openapi:
-    dev-url: http://localhost:8080
-    prod-url: https://localhost:8080
+    dev-url: http://localhost:8081
+    prod-url: https://localhost:8081
 
 spring:
   rabbitmq:

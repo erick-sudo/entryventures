@@ -19,7 +19,7 @@ class SuperUserService(
 
     @Bean
     fun initializeSuperUser() {
-        val superUser = userRepository.findByUserName("johndoe")
+        var superUser = userRepository.findByUserName("johndoe")
 
         val roles = listOf(
                 Role(name = "ROLE_LOAN_OFFICER", description = "Asses and approve loan applications"),
@@ -36,7 +36,7 @@ class SuperUserService(
 
         if(superUser == null) {
 
-            val superUser = User(
+            superUser = User(
                 "John",
                 "Doe",
                 "Smith",
